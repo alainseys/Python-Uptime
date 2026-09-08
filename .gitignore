@@ -1,1 +1,12 @@
 logs/*
+private_key
+instance/status.db
+models/__pycache__/
+venv/
+imports/
+exports/
+functions/__pycache__/*
+utils/__pycache__/*
+__pycache__
+temp_uploads/
+migrations/
