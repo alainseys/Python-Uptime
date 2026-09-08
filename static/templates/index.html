@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="90">
+    <title data-i18n="page_title">Server Status</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --primary-dark: #2563eb;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --border-radius: 0.5rem;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0; padding: 0;
+            background-color: var(--gray-50);
+            color: var(--gray-900);
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Main content */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        .status-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            padding: 1.5rem;
+            border-left: 4px solid var(--primary-color);
+            position: relative;
+        }
+        .status-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .status-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .maintenance-info {
+            background: var(--gray-100);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            color: var(--gray-700);
+        }
+        .issues-section {
+            margin-top: 2rem;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            padding: 1.5rem;
+        }
+        .issue-item, .maintenance-item, .timeline-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .issue-item:last-child, .maintenance-item:last-child, .timeline-item:last-child {
+            border-bottom: none;
+        }
+        .no-items {
+            font-style: italic;
+            color: var(--gray-500);
+        }
+
+        /* Custom Hover Bubble Tooltip */
+        .custom-bubble-trigger {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+
+        .custom-bubble-trigger:hover .custom-bubble-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(-5px) scale(1);
+            pointer-events: auto;
+        }
+
+        .custom-bubble-content {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            transform: translateY(-10px) scale(0.95);
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            padding: 1.25rem;
+            min-width: 300px;
+            max-width: 400px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            border: 1px solid var(--gray-200);
+            pointer-events: none;
+        }
+
+        .custom-bubble-content::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 20px;
+            border: 0.5rem solid transparent;
+            border-top-color: white;
+        }
+
+        .bubble-title {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            font-size: 1.1rem;
+        }
+
+        .bubble-text {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .bubble-text p {
+            margin-bottom: 0.75rem;
+        }
+
+        .bubble-text p:last-child {
+            margin-bottom: 0;
+        }
+
+        .bubble-text strong {
+            color: var(--gray-800);
+            font-weight: 600;
+        }
+
+        .bubble-text em {
+            color: var(--gray-500);
+            font-style: italic;
+        }
+
+        .bubble-info-icon {
+            font-size: 0.875rem;
+            color: var(--primary-color);
+            margin-left: 0.375rem;
+            cursor: help;
+        }
+
+        /* Timeline */
+        .timeline-item {
+            position: relative;
+            padding-left: 2.5rem;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0.75rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--gray-300);
+        }
+        .timeline-item .timeline-dot {
+            position: absolute;
+            left: 0.5rem;
+            top: 1.2rem;
+            width: 12px;
+            height: 12px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: var(--shadow-sm);
+        }
+        .timeline-item .timeline-time {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-bottom: 0.5rem;
+        }
+        .timeline-item .timeline-description {
+            font-size: 0.875rem;
+            color: var(--gray-700);
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .status-grid { grid-template-columns: 1fr; }
+            .status-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+            
+            .custom-bubble-content {
+                min-width: 260px;
+                max-width: 320px;
+                left: -30px;
+            }
+            
+            .custom-bubble-content::after {
+                left: 50px;
+            }
+        }
+
+        /* Form Styling */
+        .form-group { margin-bottom: 1rem; }
+        .form-group label {
+            display: block;
+            margin-bottom: .25rem;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+        .form-control {
+            width: 100%;
+            padding: .5rem .75rem;
+            font-size: .875rem;
+            line-height: 1.5;
+            color: var(--gray-900);
+            background-color: #fff;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+        }
+        .form-control:focus {
+            border-color: var(--primary-color);
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(59,130,246,.25);
+        }
+        textarea.form-control { resize: vertical; min-height: 80px; }
+
+        .btn {
+            display: inline-block;
+            font-weight: 500;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            cursor: pointer;
+            border: 1px solid transparent;
+            padding: .5rem 1rem;
+            font-size: .875rem;
+            line-height: 1.5;
+            border-radius: var(--border-radius);
+            transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out;
+        }
+        .btn-primary {
+            color: #fff;
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+        .btn-secondary {
+            color: var(--gray-700);
+            background-color: var(--gray-200);
+            border-color: var(--gray-200);
+        }
+        .btn-secondary:hover {
+            background-color: var(--gray-300);
+            border-color: var(--gray-300);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,.5);
+            align-items: center; justify-content: center;
+            z-index: 2000;
+        }
+        .modal.active { display: flex; }
+        .modal-dialog {
+            background: white;
+            border-radius: var(--border-radius);
+            width: 90%; max-width: 460px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+        .modal-close {
+            cursor: pointer; font-size: 1.5rem; color: var(--gray-500);
+        }
+        .modal-close:hover { color: var(--gray-800); }
+        .modal-footer { margin-top: 1.5rem; text-align: right; }
+
+        .report-btn {
+            margin-top: .75rem;
+            font-size: .875rem;
+            color: var(--primary-color);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .report-btn:hover { color: var(--primary-dark); }
+
+        /* Required Asterisk */
+        .required-asterisk {
+            color: #ef4444;
+            margin-left: 0.25rem;
+            font-weight: bold;
+        }
+
+        /* Status Colors */
+        {% for status_name, props in STATUSES.items() %}
+        .status-card.{{ status_name|lower|replace(' ', '-') }} {
+            border-left-color: {{ props.color }};
+        }
+        .status-indicator.{{ status_name|lower|replace(' ', '-') }} {
+            background-color: {{ props.color }};
+        }
+        {% endfor %}
+
+        /* Confirm Problem Icon */
+        .confirm-problem-icon {
+            transition: all 0.2s ease;
+            opacity: 0.8;
+            padding: 0.25rem;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: #ef4444;
+            margin-right: 0.5rem;
+        }
+
+        .confirm-problem-icon:hover {
+            opacity: 1;
+            transform: scale(1.1);
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+
+        .confirm-problem-icon.confirmed {
+            color: #10b981 !important;
+            opacity: 1;
+        }
+
+        .confirm-problem-icon.confirming {
+            animation: confirmPulse 0.5s ease;
+        }
+
+        /* Animation for confirmation */
+        @keyframes confirmPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* Status header with confirm icon */
+        .status-header-with-confirm {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 data-i18n="page_title"><center>IT Service status</center></h1>
+        <center><p data-i18n="helpdesk_text">Are you experiencing problems with a system that is not listed? Please contact the helpdesk by phone: <a href="tel:+3256237766">+32 56 23 77 66</a></p></center>
+
+        <!-- Report Problem Button -->
+        <div style="text-align:center; margin:2rem 0;">
+            <button id="openReportProblemBtn" class="btn btn-primary" data-i18n="report_problem">
+                Report Problem
+            </button>
+            <button id="openSubscribeBtn" class="btn btn-secondary">
+                <i class="fas fa-bell"></i> <span data-i18n="manage_notifications">Manage Notifications</span>
+            </button>
+        </div>
+
+        <div class="status-grid">
+            {% for server in servers %}
+            <div class="status-card {{ server.current_status|lower|replace(' ', '-') }}">
+                <div class="status-header">
+                    <div class="custom-bubble-trigger">
+                        <div class="status-name">
+                            {{ server.name }}
+                            <span class="bubble-info-icon">
+                                <i class="fas fa-info-circle"></i>
+                            </span>
+                        </div>
+                        
+                        <div class="custom-bubble-content">
+                            <div class="bubble-title">{{ server.name }} Information</div>
+                            <div class="bubble-text">
+                                {% if get_server_description(server.id) %}
+                                    {% set desc = get_server_description(server.id) %}
+                                    {% if desc.title %}
+                                        <p><strong>{{ desc.title }}</strong></p>
+                                    {% endif %}
+                                    {% if desc.description %}
+                                        <p>{{ desc.description }}</p>
+                                    {% endif %}
+                                    {% if desc.contact_info %}
+                                        <p><strong>Contact:</strong> {{ desc.contact_info }}</p>
+                                    {% endif %}
+                                {% else %}
+                                    <!-- Fallback to hardcoded descriptions if no database entry exists -->
+                                    {% if server.name == "SAP" %}
+                                        <p><strong>SAP Business Suite</strong> - Our main ERP system for finance, logistics, and HR.</p>
+                                        <p>Includes modules: FI/CO (Finance), SD (Sales), MM (Materials), PP (Production), and HR (Human Resources).</p>
+                                    
+                                    {% elif server.name == "NETWERK" or server.name == "NETWORK" %}
+                                        <p><strong>Network Infrastructure</strong> - Core networking services and connectivity.</p>
+                                        <p>Includes: Switches, routers, firewalls, VPN, and Wi-Fi controllers.</p>
+                                    
+                                    {% elif server.name == "CITRIX" %}
+                                        <p><strong>Citrix Virtual Apps & Desktops</strong> - Remote access and virtual desktop infrastructure.</p>                                  
+                                        
+                                    {% elif server.name == "OFFICE" %}
+                                        <p><strong>Microsoft 365 Services</strong> - Email, Teams, and Office applications.</p>                                    
+                                    
+                                    
+                                    {% elif server.name == "OFFLINK" %}
+                                        <p><strong>Offline Link Services</strong> - Batch processing and file transfer systems.</p>                                    
+                                    
+                                    {% elif server.name == "3CX" %}
+                                        <p><strong>3CX Phone System</strong> - VoIP telephone system and call center.</p>
+                                    
+                                    {% elif server.name == "SELF-SCAN" %}
+                                        <p><strong>Self-Scan System</strong> - Barcode scanning and inventory management system.</p>
+                                    
+                                    {% else %}
+                                        <p><strong>General Server Information</strong></p>
+                                        <p>This server handles critical business operations.</p>                                   
+                                    {% endif %}
+                                {% endif %}
+                                
+                                <p style="margin-top: 0.75rem; font-size: 0.8rem; color: var(--gray-500);">
+                                    <i class="fas fa-clock"></i> Last updated: {{ server.last_checked.strftime('%Y-%m-%d %H:%M') if server.last_checked else 'N/A' }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="status-header-with-confirm">
+                        <!-- Problem confirmation icon - only show for problem states -->
+                        {% if server.current_status in ['Performance Issues', 'Partial Outage', 'Major Outage', 'Under investigation'] %}
+                        <div class="confirm-problem-icon" 
+                             data-server-id="{{ server.id }}"
+                             data-server-name="{{ server.name }}"
+                             title="Click if you're experiencing this problem">
+                            <i class="fas fa-hand-paper"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="status-indicator {{ server.current_status|lower|replace(' ', '-') }}">
+                            {% if server.current_status in STATUSES and STATUSES[server.current_status].icon %}
+                                <i class="{{ STATUSES[server.current_status].icon }}"></i>
+                            {% endif %}
+                            <span data-i18n="status_{{ server.current_status|lower|replace(' ', '_') }}">{{ server.current_status }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {% for maint in maintenances if maint.server_id == server.id %}
+                <div class="maintenance-info">
+                    <span data-i18n="scheduled">Scheduled</span>: {{ maint.start_time }} to {{ maint.end_time }} - {{ maint.description }}
+                </div>
+                {% endfor %}
+
+                <a href="{{ url_for('server_details', server_id=server.id) }}"
+                   style="display:inline-block;margin-top:1rem;color:var(--primary-color);text-decoration:none;font-weight:500;"
+                   data-i18n="view_details">View Details</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="issues-section">
+            <h2 data-i18n="status_updates">Today's Status Updates</h2>
+            <h3 data-i18n="issue_timeline">Issue Timeline</h3>
+            {% if timeline_issues %}
+                {% for issue in timeline_issues %}
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div>
+                        <strong>{{ issue.server.name }}</strong>
+                        <span class="status-indicator {{ issue.status|lower|replace(' ', '') }}">
+                            {% if issue.status in STATUSES and STATUSES[issue.status].icon %}
+                                <i class="{{ STATUSES[issue.status].icon }}"></i>
+                            {% endif %}
+                            <span data-i18n="status_{{ issue.status|lower|replace(' ', '_') }}">{{ issue.status }}</span>
+                        </span>
+                    </div>
+                    <div class="timeline-time">
+                        {{ issue.relative_time }} - {{ issue.start_time.strftime('%d/%m/%Y, %H:%M') }}
+                    </div>
+                    {% if issue.description %}
+                        <div class="timeline-description">{{ issue.description }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-items" data-i18n="no_timeline_issues">No status updates today.</div>
+            {% endif %}
+
+            {% if scheduled_maintenances %}
+            <h3 data-i18n="scheduled_maintenance">Scheduled Maintenance</h3>
+                {% for maint in scheduled_maintenances %}
+                <div class="maintenance-item">
+                    <div><strong>{{ maint.server.name }}</strong></div>
+                    <div>{{ maint.start_time }} to {{ maint.end_time }}</div>
+                    <div>{{ maint.description }}</div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Report Problem Modal -->
+    <div id="reportProblemModal" class="modal">
+        <div class="modal-dialog">
+            <form id="reportProblemForm" novalidate>
+                <div class="modal-header">
+                    <div data-i18n="report_problem_title">Report a Problem</div>
+                    <span class="modal-close" aria-label="Close">×</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="problemServer" data-i18n="select_server">
+                        Server <span class="required-asterisk">*</span>
+                    </label>
+                    <select class="form-control" id="problemServer" required>
+                        <option value="" disabled selected>-- Select server --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="problemUser" data-i18n="your_name">
+                        Your Name <span class="required-asterisk">*</span>
+                    </label>
+                    <input type="text" class="form-control" id="problemUser" 
+                           placeholder="Enter your name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="problemDesc" data-i18n="description_label">
+                        Description <small>(optional)</small>
+                    </label>
+                    <textarea class="form-control" id="problemDesc" rows="3"
+                              placeholder="What are you experiencing?"></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close"
+                            data-i18n="cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary"
+                            data-i18n="submit_report">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirm Problem Modal -->
+    <div id="confirmProblemModal" class="modal">
+        <div class="modal-dialog">
+            <form id="confirmProblemForm" novalidate>
+                <div class="modal-header">
+                    <div id="confirmProblemTitle">Confirm Problem</div>
+                    <span class="modal-close" aria-label="Close">×</span>
+                </div>
+
+                <input type="hidden" id="confirmServerId" value="">
+                <input type="hidden" id="confirmServerName" value="">
+
+                <div class="form-group">
+                    <p id="confirmQuestion" style="font-size: 1rem; color: var(--gray-700); margin-bottom: 1.5rem;">
+                        <!-- Filled by JavaScript -->
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmUserName" data-i18n="your_name">
+                        Your Name <span class="required-asterisk">*</span>
+                    </label>
+                    <input type="text" class="form-control" id="confirmUserName" 
+                           placeholder="Enter your name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmDescription" data-i18n="description_label">
+                        Description <small>(optional)</small>
+                    </label>
+                    <textarea class="form-control" id="confirmDescription" rows="3"
+                              placeholder="What are you experiencing?"></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close"
+                            data-i18n="cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary"
+                            data-i18n="submit_report">Confirm Problem</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Subscription Modal -->
+    <div id="subscribeModal" class="modal">
+        <div class="modal-dialog">
+            <form id="subscribeForm">
+                <div class="modal-header">
+                    <div data-i18n="notification_settings">Notification Settings</div>
+                    <span class="modal-close">×</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="subEmail" data-i18n="email_address">
+                        Email <span class="required-asterisk">*</span>
+                    </label>
+                    <input type="email" class="form-control" id="subEmail" required
+                           placeholder="you@company.com">
+                </div>
+
+                <div class="form-group">
+                    <label data-i18n="select_servers">
+                        Servers you want alerts for <span class="required-asterisk">*</span>
+                    </label>
+                    <div id="serverCheckboxes" style="max-height:200px;overflow-y:auto;padding:0.5rem;border:1px solid var(--gray-300);border-radius:var(--border-radius);">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close"
+                            data-i18n="cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary"
+                            data-i18n="save">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // === Report Problem Modal ===
+        const reportProblemModal = document.getElementById('reportProblemModal');
+        const openReportProblemBtn = document.getElementById('openReportProblemBtn');
+        const closeProblemBtns = reportProblemModal.querySelectorAll('.modal-close');
+        const serverSelect = document.getElementById('problemServer');
+        const userInput = document.getElementById('problemUser');
+        const descInput = document.getElementById('problemDesc');
+        const reportProblemForm = document.getElementById('reportProblemForm');
+
+        openReportProblemBtn.addEventListener('click', () => {
+            fetch('/report_problem')
+                .then(r => r.json())
+                .then(servers => {
+                    serverSelect.innerHTML = '<option value="" disabled selected>-- Select server --</option>';
+                    servers.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s.id;
+                        opt.textContent = s.name;
+                        serverSelect.appendChild(opt);
+                    });
+                })
+                .catch(() => alert('Could not load server list'));
+
+            reportProblemForm.reset();
+            userInput.focus();
+            reportProblemModal.classList.add('active');
+        });
+
+        closeProblemBtns.forEach(b => b.addEventListener('click', () => {
+            reportProblemModal.classList.remove('active');
+        }));
+
+        reportProblemModal.addEventListener('click', e => {
+            if (e.target === reportProblemModal) {
+                reportProblemModal.classList.remove('active');
+            }
+        });
+
+        // Submit with validation
+        reportProblemForm.addEventListener('submit', async e => {
+            e.preventDefault();
+
+            if (!reportProblemForm.checkValidity()) {
+                reportProblemForm.reportValidity();
+                return;
+            }
+
+            const serverId = serverSelect.value;
+            const userName = userInput.value.trim();
+            const rawDesc = descInput.value.trim();
+
+            const description = rawDesc
+                ? `${rawDesc} - ${userName}`
+                : userName;
+
+            const payload = {
+                server_id: Number(serverId),
+                description: description
+            };
+
+            try {
+                const resp = await fetch('/api/report', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await resp.json();
+
+                if (resp.ok && data.success) {
+                    alert('Report sent – thank you!');
+                    reportProblemModal.classList.remove('active');
+                } else {
+                    alert(data.error || 'Something went wrong');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Network error – could not send report');
+            }
+        });
+
+        // === NOTIFICATION SUBSCRIPTION MODAL ===
+        const subscribeModal = document.getElementById('subscribeModal');
+        const openSubscribeBtn = document.getElementById('openSubscribeBtn');
+        const subForm = document.getElementById('subscribeForm');
+        const subEmail = document.getElementById('subEmail');
+        const serverBoxesDiv = document.getElementById('serverCheckboxes');
+
+        openSubscribeBtn.addEventListener('click', () => {
+            fetch('/api/servers')
+                .then(r => r.json())
+                .then(servers => {
+                    serverBoxesDiv.innerHTML = '';
+                    servers.forEach(s => {
+                        const label = document.createElement('label');
+                        label.style.display = 'block';
+                        label.innerHTML = `
+                            <input type="checkbox" name="server" value="${s.id}"> ${s.name}
+                        `;
+                        serverBoxesDiv.appendChild(label);
+                    });
+                })
+                .catch(() => alert('Could not load servers'));
+            subscribeModal.classList.add('active');
+        });
+
+        subscribeModal.querySelectorAll('.modal-close').forEach(b =>
+            b.addEventListener('click', () => subscribeModal.classList.remove('active'))
+        );
+        subscribeModal.addEventListener('click', e => {
+            if (e.target === subscribeModal) subscribeModal.classList.remove('active');
+        });
+
+        subForm.addEventListener('submit', async e => {
+            e.preventDefault();
+            const email = subEmail.value.trim();
+            const checked = Array.from(serverBoxesDiv.querySelectorAll('input[name=server]:checked'))
+                                 .map(cb => Number(cb.value));
+
+            if (!email || checked.length === 0) {
+                alert('Please enter your email and select at least one server.');
+                return;
+            }
+
+            try {
+                const resp = await fetch('/api/subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, servers: checked })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    alert('Subscription saved! You will receive status alerts.');
+                    subscribeModal.classList.remove('active');
+                } else {
+                    alert(data.error || 'Failed to save subscription.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Network error. Please try again.');
+            }
+        });
+
+        // === CONFIRM PROBLEM MODAL ===
+        const confirmProblemModal = document.getElementById('confirmProblemModal');
+        const confirmProblemForm = document.getElementById('confirmProblemForm');
+        const confirmServerId = document.getElementById('confirmServerId');
+        const confirmServerName = document.getElementById('confirmServerName');
+        const confirmQuestion = document.getElementById('confirmQuestion');
+        const confirmUserName = document.getElementById('confirmUserName');
+        const confirmDescription = document.getElementById('confirmDescription');
+        const confirmCloseBtns = confirmProblemModal.querySelectorAll('.modal-close');
+        
+        let currentConfirmIcon = null;
+
+        // Function to open confirm problem modal
+        function openConfirmProblemModal(serverId, serverName, confirmIcon) {
+            currentConfirmIcon = confirmIcon;
+            confirmServerId.value = serverId;
+            confirmServerName.value = serverName;
+            confirmQuestion.textContent = `Are you experiencing problems with ${serverName}?`;
+            
+            // Reset form
+            confirmProblemForm.reset();
+            confirmUserName.focus();
+            
+            // Show modal
+            confirmProblemModal.classList.add('active');
+        }
+
+        // Close modal functions
+        confirmCloseBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                confirmProblemModal.classList.remove('active');
+            });
+        });
+
+        confirmProblemModal.addEventListener('click', e => {
+            if (e.target === confirmProblemModal) {
+                confirmProblemModal.classList.remove('active');
+            }
+        });
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && confirmProblemModal.classList.contains('active')) {
+                confirmProblemModal.classList.remove('active');
+            }
+        });
+
+        // Submit confirm problem form
+        confirmProblemForm.addEventListener('submit', async e => {
+            e.preventDefault();
+
+            if (!confirmProblemForm.checkValidity()) {
+                confirmProblemForm.reportValidity();
+                return;
+            }
+
+            const serverId = confirmServerId.value;
+            const serverName = confirmServerName.value;
+            const userName = confirmUserName.value.trim();
+            const rawDesc = confirmDescription.value.trim();
+
+            const description = rawDesc
+                ? `${rawDesc} - ${userName}`
+                : userName;
+
+            // Add visual feedback to the icon
+            if (currentConfirmIcon) {
+                currentConfirmIcon.classList.add('confirming');
+            }
+
+            try {
+                const payload = {
+                    server_id: Number(serverId),
+                    description: description
+                };
+
+                const response = await fetch('/api/report', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Close modal
+                    confirmProblemModal.classList.remove('active');
+                    
+                    // Update icon visual feedback
+                    if (currentConfirmIcon) {
+                        currentConfirmIcon.classList.remove('confirming');
+                        currentConfirmIcon.classList.add('confirmed');
+                        currentConfirmIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                        currentConfirmIcon.title = 'Problem reported - thank you!';
+                        currentConfirmIcon.style.pointerEvents = 'none';
+                    }
+                    
+                    // Store in localStorage to remember this confirmation
+                    const userConfirmedServers = JSON.parse(localStorage.getItem('confirmedServers') || '{}');
+                    userConfirmedServers[serverId] = true;
+                    localStorage.setItem('confirmedServers', JSON.stringify(userConfirmedServers));
+                    
+                    // Show success message
+                    alert(`Thank you for confirming problems with ${serverName}! Your report has been submitted.`);
+                } else {
+                    alert(data.error || 'Failed to submit report. Please try again.');
+                    if (currentConfirmIcon) {
+                        currentConfirmIcon.classList.remove('confirming');
+                    }
+                }
+            } catch (error) {
+                console.error('Error reporting issue:', error);
+                alert('Network error. Please try again.');
+                if (currentConfirmIcon) {
+                    currentConfirmIcon.classList.remove('confirming');
+                }
+            }
+        });
+
+        // === CONFIRM PROBLEM ICON FUNCTIONALITY ===
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click handlers to all confirmation icons
+            const confirmIcons = document.querySelectorAll('.confirm-problem-icon');
+            
+            confirmIcons.forEach(icon => {
+                icon.addEventListener('click', function() {
+                    const serverId = this.dataset.serverId;
+                    const serverName = this.dataset.serverName;
+                    
+                    // Open the confirm problem modal
+                    openConfirmProblemModal(serverId, serverName, this);
+                });
+            });
+            
+            // Load previously confirmed servers from localStorage
+            const userConfirmedServers = JSON.parse(localStorage.getItem('confirmedServers') || '{}');
+            
+            // Update icons for already confirmed servers
+            confirmIcons.forEach(icon => {
+                const serverId = icon.dataset.serverId;
+                if (userConfirmedServers[serverId]) {
+                    icon.classList.add('confirmed');
+                    icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                    icon.title = 'You have already reported this problem';
+                    icon.style.pointerEvents = 'none';
+                }
+            });
+        });
+
+        // Close modals with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
