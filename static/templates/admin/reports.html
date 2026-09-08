@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue Reports</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css')}}">
+
+</head>
+<body>
+    <div class="container">
+        <h1>Issue Reports (Total: {{ total_reports }})</h1>
+        {% if reports %}
+        <table class="reports-table">
+            <thead>
+                <tr>
+                    <th>Server</th>
+                    <th>Request Body</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td>{{ report.server.name }}</td>
+                    <td><pre>{{ report.request_body | tojson }}</pre></td>
+                    <td>{{ report.formatted_date }}</td>
+                    <td>{{ report.formatted_time }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="no-reports">No issue reports found.</div>
+        {% endif %}
+        <a href="{{ url_for('admin') }}" class="back-link">Back to Admin Dashboard</a>
+    </div>
+</body>
+</html>
