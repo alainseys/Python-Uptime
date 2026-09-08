@@ -1,0 +1,139 @@
+        .check-result {
+            margin-top: 0.5rem;
+        }
+        .check-result.success {
+            color: var(--success-color);
+        }
+        .check-result.failure {
+            color: var(--danger-color);
+        }
+        :root {
+            --primary-color: #3b82f6;
+            --primary-dark: #2563eb;
+            --success-color: #10b981;
+            --success-dark: #059669;
+            --warning-color: #f59e0b;
+            --warning-dark: #d97706;
+            --danger-color: #ef4444;
+            --danger-dark: #dc2626;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --border-radius: 0.5rem;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--gray-50);
+            color: var(--gray-900);
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        h1 {
+            font-size: clamp(1.875rem, 5vw, 2.25rem);
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--gray-900);
+        }
+        form {
+            margin-bottom: 2rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--primary-color); }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-success { background: var(--success-color); }
+        .btn-success:hover { background: var(--success-dark); }
+        .btn-danger { background: var(--danger-color); }
+        .btn-danger:hover { background: var(--danger-dark); }
+        .btn-warning { background: var(--warning-color); }
+        .btn-warning:hover { background: var(--warning-dark); }
+        .check-list {
+            list-style: none;
+            padding: 0;
+        }
+        .check-item {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .check-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .check-label {
+            font-weight: 600;
+        }
+        .check-enabled {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--success-color);
+        }
+        .check-enabled.disabled {
+            color: var(--danger-color);
+        }
+        .check-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .edit-form {
+            display: none;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--gray-200);
+        }
+        .edit-form.active {
+            display: block;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 2rem;
+        }
