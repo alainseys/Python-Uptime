@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Statuses</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/statuses.css')}}">
+
+</head>
+<body>
+    <div class="container">
+        <h1>Manage Statuses</h1>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <div class="alert">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <form method="post">
+            <input type="hidden" name="action" value="add">
+            <div class="form-group">
+                <label for="status_name">Status Name</label>
+                <input type="text" id="status_name" name="status_name" required>
+            </div>
+            <div class="form-group">
+                <label for="color">Status Color</label>
+                <input type="color" id="color" name="color" required>
+            </div>
+            <div class="form-group">
+                <label for="icon">Icon (Optional)</label>
+                <select id="icon" name="icon">
+                    <option value="">No Icon</option>
+                    {% for icon in available_icons %}
+                        <option value="{{ icon }}">{{ icon }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn-primary">Add Status</button>
+        </form>
+        <div class="status-list">
+            <h2>Existing Statuses</h2>
+            {% for status in statuses %}
+                <div class="status-item">
+                    <div class="color-box" style="background-color: {{ status.color }};"></div>
+                    {% if status.icon %}
+                        <i class="{{ status.icon }}"></i>
+                    {% endif %}
+                    <div>{{ status.name }}</div>
+                    <div class="status-actions">
+                        <button onclick="showEditForm({{ status.id }})" class="btn-primary">Edit</button>
+                        <form method="post" onsubmit="return confirm('Are you sure you want to delete this status?')">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="status_id" value="{{ status.id }}">
+                            <button type="submit" class="btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+                <div id="edit-form-{{ status.id }}" class="edit-form" style="display: none;">
+                    <h2>Edit {{ status.name }}</h2>
+                    <form method="post">
+                        <input type="hidden" name="action" value="edit">
+                        <input type="hidden" name="status_id" value="{{ status.id }}">
+                        <div class="form-group">
+                            <label for="status_name_{{ status.id }}">Status Name</label>
+                            <input type="text" id="status_name_{{ status.id }}" name="status_name" value="{{ status.name }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="color_{{ status.id }}">Status Color</label>
+                            <input type="color" id="color_{{ status.id }}" name="color" value="{{ status.color }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="icon_{{ status.id }}">Icon (Optional)</label>
+                            <select id="icon_{{ status.id }}" name="icon">
+                                <option value="" {% if not status.icon %}selected{% endif %}>No Icon</option>
+                                {% for icon in available_icons %}
+                                    <option value="{{ icon }}" {% if status.icon == icon %}selected{% endif %}>{{ icon }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-primary">Update Status</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+        <a href="{{ url_for('admin') }}" class="back-link">Back to Admin Dashboard</a>
+    </div>
+    <script>
+        function showEditForm(statusId) {
+            document.getElementById(`edit-form-${statusId}`).style.display = 'block';
+        }
+    </script>
+</body>
+</html>
