@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Ping Checks - {{ server.name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ping-checks.css')}}">
+
+    <style>
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Manage Ping Checks for {{ server.name }}</h1>
+        
+        <form method="post">
+            <input type="hidden" name="action" value="add">
+            <label for="label">Label:</label>
+            <input type="text" id="label" name="label" required>
+            <label for="hostname">Hostname:</label>
+            <input type="text" id="hostname" name="hostname" required>
+            <button type="submit" class="btn btn-primary">Add Check</button>
+        </form>
+        
+        <ul class="check-list">
+            {% for check in checks %}
+            <li class="check-item">
+                <div class="check-header">
+                    <span class="check-label">{{ check.label }}</span>
+                    <span class="check-enabled {% if not check.enabled %}disabled{% endif %}">
+                        <i class="fa-solid {% if check.enabled %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                        {{ 'Enabled' if check.enabled else 'Disabled' }}
+                    </span>
+                </div>
+                <div>Hostname: {{ check.hostname }}</div>
+                <div>Last Checked: {{ check.last_checked.strftime('%Y-%m-%d %H:%M:%S UTC') if check.last_checked else 'Never' }}</div>
+                <div class="check-actions">
+                    <form method="post" style="display: inline;">
+                        <input type="hidden" name="action" value="toggle">
+                        <input type="hidden" name="check_id" value="{{ check.id }}">
+                        <button type="submit" class="btn btn-success">{{ 'Disable' if check.enabled else 'Enable' }}</button>
+                    </form>
+                    <form method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this ping check?')">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="check_id" value="{{ check.id }}">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                    <form method="post" action="{{ url_for('force_check', check_type='ping', check_id=check.id) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-primary">Force Check</button>
+                    </form>
+                </div>
+            </li>
+            {% else %}
+            <li>No ping checks configured.</li>
+            {% endfor %}
+        </ul>
+        
+        <a href="{{ url_for('admin') }}" class="back-link">Back to Admin Dashboard</a>
+    </div>
+</body>
+</html>
