@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --primary-dark: #2563eb;
+            --success-color: #10b981;
+            --success-dark: #059669;
+            --warning-color: #f59e0b;
+            --warning-dark: #d97706;
+            --danger-color: #ef4444;
+            --danger-dark: #dc2626;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --border-radius: 0.5rem;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--gray-50);
+            color: var(--gray-900);
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        h1 {
+            font-size: clamp(1.875rem, 5vw, 2.25rem);
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--gray-900);
+        }
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        .admin-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            padding: 1.5rem;
+            border-left: 4px solid var(--primary-color);
+        }
+        .status-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .status-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        {% for status_name, props in STATUSES.items() %}
+        .status-indicator.{{ status_name|lower|replace(' ', '-') }} {
+            background-color: {{ props.color }};
+        }
+        {% endfor %}
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--primary-color); }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-success { background: var(--success-color); }
+        .btn-success:hover { background: var(--success-dark); }
+        .btn-danger { background: var(--danger-color); }
+        .btn-danger:hover { background: var(--danger-dark); }
+        .maintenance-info, .update-info {
+            background: var(--gray-100);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            color: var(--gray-700);
+        }
+        .maintenance-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .admin-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        .admin-actions a {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .admin-actions a:hover {
+            background: var(--primary-dark);
+        }
+
+        /* ==================== HEADER STYLES ==================== */
+        .admin-header {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+        .admin-header .user-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+        .admin-header .user-area i {
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+        .admin-header .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .admin-header .logout-btn,
+        .admin-header .tools-btn {
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .admin-header .logout-btn {
+            background: var(--danger-color);
+            color: white;
+        }
+        .admin-header .logout-btn:hover {
+            background: var(--danger-dark);
+        }
+        .admin-header .tools-btn {
+            background: var(--primary-color);
+            color: white;
+        }
+        .admin-header .tools-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Header Dropdown */
+        .header-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .header-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: white;
+            min-width: 220px;
+            box-shadow: var(--shadow-md);
+            border-radius: var(--border-radius);
+            z-index: 1000;
+            margin-top: 0.25rem;
+            border: 1px solid var(--gray-200);
+        }
+        .header-dropdown-content a,
+        .header-dropdown-content form {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--gray-800);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        .header-dropdown-content a:last-child,
+        .header-dropdown-content form:last-child {
+            border-bottom: none;
+        }
+        .header-dropdown-content a:hover,
+        .header-dropdown-content form button:hover {
+            background-color: var(--gray-50);
+        }
+        .header-dropdown-content form {
+            margin: 0;
+        }
+        .header-dropdown-content form button {
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            padding: 0.75rem 1rem;
+            color: inherit;
+            font: inherit;
+            cursor: pointer;
+        }
+        .header-dropdown:hover .header-dropdown-content {
+            display: block;
+        }
+        .header-dropdown-content .danger {
+            color: var(--danger-color);
+        }
+        .header-dropdown-content .danger:hover {
+            color: var(--danger-dark);
+            background-color: #fee2e2;
+        }
+
+        /* Card Dropdown (existing) */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            color: white;
+            background: var(--primary-color);
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .dropdown-btn:hover {
+            background: var(--primary-dark);
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: var(--shadow-md);
+            border-radius: var(--border-radius);
+            z-index: 1;
+            margin-top: 0.25rem;
+            left: 0;
+        }
+        .dropdown-content form,
+        .dropdown-content a {
+            display: block;
+            padding: 0.5rem 1rem;
+            color: var(--gray-900);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .dropdown-content form button {
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            padding: 0;
+            color: inherit;
+            font: inherit;
+            cursor: pointer;
+        }
+        .dropdown-content a:hover,
+        .dropdown-content form button:hover {
+            background-color: var(--gray-100);
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        .dropdown-content .btn-danger {
+            color: var(--danger-color);
+        }
+        .dropdown-content .btn-danger:hover {
+            color: var(--danger-dark);
+            background-color: var(--gray-100);
+        }
+
+        @media (max-width: 640px) {
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+            .action-buttons {
+                flex-direction: column;
+            }
+            .admin-header {
+                flex-direction: column;
+                gap: 0.75rem;
+                padding: 1rem;
+            }
+            .admin-header .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== ADMIN HEADER WITH DROPDOWN ==================== -->
+    <header class="admin-header">
+        <div class="user-area">
+            <i class="fa-solid fa-user-shield"></i>
+            <span>{{ session['username'] }}</span>
+        </div>
+
+        <div class="header-actions">
+            <!-- Admin Tools Dropdown -->
+            <div class="header-dropdown">
+                <button class="tools-btn">
+                    <i class="fa-solid fa-wrench"></i> Admin Tools
+                    <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; margin-left: 0.25rem;"></i>
+                </button>
+                <div class="header-dropdown-content">
+                    <a href="{{ url_for('add_server') }}">Add Server</a>
+                    <a href="{{ url_for('manage_statuses') }}">Manage Statuses</a>
+                    <a href="{{ url_for('admin_export') }}">Export Database</a>
+                    <a href="{{ url_for('admin_subscribers') }}">Show Subscribers</a>
+                    <a href="{{ url_for('view_reports') }}">View Issue Reports</a>
+                    <a href="{{ url_for('manage_descriptions')}}">Manage Descriptions</a>
+
+                    <form action="{{ url_for('reset_reports') }}" method="post" 
+                          onsubmit="return confirm('Are you sure you want to reset all issue reports? This cannot be undone.');">
+                        <button type="submit" class="danger">Reset Issue Reports</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Logout Button -->
+            <a href="{{ url_for('logout') }}" class="logout-btn">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </a>
+        </div>
+    </header>
+    <!-- =================================================================== -->
+
+    <div class="container">
+        <h1>Admin Dashboard</h1>
+
+        {% if servers %}
+        <div class="admin-grid">
+            {% for server in servers %}
+            <div class="admin-card">
+                <div class="status-header">
+                    <div class="status-name">{{ server.name }}</div>
+                    <div class="status-indicator {{ server.current_status|lower|replace(' ', '-') }}">
+                        {% if STATUSES[server.current_status].icon %}
+                            <i class="{{ STATUSES[server.current_status].icon }}"></i>
+                        {% endif %}
+                        {{ server.current_status }}
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <div class="dropdown">
+                        <button class="dropdown-btn">Actions <i class="fa-solid fa-chevron-down"></i></button>
+                        <div class="dropdown-content">
+                            <form action="{{ url_for('update_status', server_id=server.id) }}" method="get">
+                                <button type="submit" class="btn btn-primary">Update Status</button>
+                            </form>
+                            <form action="{{ url_for('schedule_maintenance', server_id=server.id) }}" method="get">
+                                <button type="submit" class="btn btn-success">Schedule Maintenance</button>
+                            </form>
+                            <form action="{{ url_for('manage_http_checks', server_id=server.id) }}" method="get">
+                                <button type="submit" class="btn btn-primary">Manage HTTP Checks</button>
+                            </form>
+                            <form action="{{ url_for('manage_ping_checks', server_id=server.id) }}" method="get">
+                                <button type="submit" class="btn btn-primary">Manage Ping Checks</button>
+                            </form>
+                            <form action="{{ url_for('edit_server', server_id=server.id) }}" method="get">
+                                <button type="submit" class="btn btn-primary">Edit Name</button>
+                            </form>
+                            <form action="{{ url_for('delete_server', server_id=server.id) }}" method="post" 
+                                  onsubmit="return confirm('Are you sure you want to delete this server? This cannot be undone!')">
+                                <button type="submit" class="btn btn-danger">Delete Server</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                {% for maint in maintenances if maint.server_id == server.id %}
+                <div class="maintenance-info">
+                    <div>{{ maint.start_time }} to {{ maint.end_time }} - {{ maint.description }}</div>
+                    <div class="maintenance-actions">
+                        <form action="{{ url_for('delete_maintenance', maintenance_id=maint.id) }}" method="post" 
+                              style="display: inline;" 
+                              onsubmit="return confirm('Are you sure you want to delete this maintenance period?')">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Optional: Keep a minimal bottom bar if desired -->
+        <div class="admin-actions">
+            <a href="{{ url_for('index') }}">View Public Status Page</a>
+        </div>
+    </div>
+    
+</body>
+</html>
