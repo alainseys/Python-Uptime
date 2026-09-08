@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css')}}">
+
+</head>
+<body>
+    <div class="login-container">
+            <center><img src="https://s3.vanmarcke.com/vanmarcke-prod/styles/fallback/s3/2022-12/vanmarcke_logo.png.jpeg?itok=W-QZSkow" /></center>
+
+        <h1>Admin Login</h1>
+        <p>Login using your vanmarcke credentials (Vxxx)</p>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="error-messages">
+                    <ul style="margin: 0; padding: 0; list-style: none;">
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endwith %}
+        <form method="post">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+            <input type="submit" value="Login">
+        </form>
+        <div class="back-link">
+            <a href="{{ url_for('index') }}">Back to Status</a>
+        </div>
+    </div>
+</body>
+</html>
