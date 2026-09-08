@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Details - {{ server.name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/server-details.css')}}">
+
+    <style>
+        {% for status_name, props in STATUSES.items() %}
+        .status-indicator.{{ status_name|lower|replace(' ', '-') }} {
+            background-color: {{ props.color }};
+        }
+        {% endfor %}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a href="{{ url_for('index') }}" class="floating-home-btn" title="Back to Home">
+    <i class="fas fa-home"></i>
+</a>
+
+
+
+        <h1 data-i18n="server_details_title">Server Details - {{ server.name }}</h1>
+        <div class="status-card {{ server.current_status|lower|replace(' ', '-') }}">
+            <div class="status-header">
+                <div class="status-name">{{ server.name }}</div>
+                <div class="status-indicator {{ server.current_status|lower|replace(' ', '-') }}">
+                    {% if server.current_status in STATUSES and STATUSES[server.current_status].icon and STATUSES[server.current_status].icon != '' %}
+                        <i class="{{ STATUSES[server.current_status].icon }}"></i>
+                    {% endif %}
+                    <span data-i18n="status_{{ server.current_status|lower|replace(' ', '_') }}">{{ server.current_status }}</span>
+                </div>
+            </div>
+            {% for maint in maintenances %}
+            <div class="maintenance-info">
+                <span data-i18n="scheduled">Scheduled</span>: {{ maint.start_time }} to {{ maint.end_time }} - {{ maint.description }}
+            </div>
+            {% endfor %}
+        </div>
+        <h2 data-i18n="status_history">Status History</h2>
+        {% for history in histories %}
+        <div class="history-item">
+            <div class="history-dot"></div>
+            <div>
+                <strong>{{ history.status }}</strong>
+                <span class="status-indicator {{ history.status|lower|replace(' ', '-') }}">
+                    {% if history.status in STATUSES and STATUSES[history.status].icon and STATUSES[history.status].icon != '' %}
+                        <i class="{{ STATUSES[history.status].icon }}"></i>
+                    {% endif %}
+                    <span data-i18n="status_{{ history.status|lower|replace(' ', '_') }}">{{ history.status }}</span>
+                </span>
+            </div>
+            <div><span data-i18n="started">Started</span>: {{ history.start_time }}</div>
+            {% if history.end_time %}
+                <div><span data-i18n="ended">Ended</span>: {{ history.end_time }}</div>
+            {% endif %}
+            {% if history.description %}
+                <div>{{ history.description }}</div>
+            {% endif %}
+            <div class="admin-info">
+                <span data-i18n="updated_by">Updated by</span>: {{ history.admin_name }} ({{ history.username or 'system' }})
+            </div>
+        </div>
+        {% endfor %}
+        <a href="{{ url_for('index') }}" class="back-link" data-i18n="back_to_home">Back to Home</a>
+    </div>
+    <script>
+        const translations = {
+            en: '/static/translations/en.json',
+            nl: '/static/translations/nl.json',
+            fr: '/static/translations/fr.json'
+        };
+
+        async function loadTranslations(lang) {
+            try {
+                const response = await fetch(translations[lang]);
+                if (!response.ok) throw new Error('Failed to load translations');
+                return await response.json();
+            } catch (error) {
+                console.error('Error loading translations:', error);
+                return {};
+            }
+        }
+
+        function updateContent(translations) {
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (translations[key]) {
+                    element.textContent = translations[key];
+                }
+            });
+            document.title = translations['page_title'] || document.title;
+            document.documentElement.lang = translations['lang_code'] || 'en';
+        }
+
+        function setSelectedFlag(lang) {
+            document.querySelectorAll('.flag').forEach(flag => {
+                flag.classList.toggle('selected', flag.getAttribute('data-lang') === lang);
+                flag.classList.toggle('fallback', !flag.classList.contains('flag-icon') || !flag.classList.contains(`fi-${lang}`));
+            });
+        }
+
+        document.querySelectorAll('.flag').forEach(flag => {
+            flag.addEventListener('click', async () => {
+                const lang = flag.getAttribute('data-lang');
+                localStorage.setItem('selectedLanguage', lang);
+                setSelectedFlag(lang);
+                const translationsData = await loadTranslations(lang);
+                updateContent(translationsData);
+            });
+        });
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const savedLang = localStorage.getItem('selectedLanguage') || 'en';
+            setSelectedFlag(savedLang);
+            const translationsData = await loadTranslations(savedLang);
+            updateContent(translationsData);
+        });
+    </script>
+</body>
+</html>
