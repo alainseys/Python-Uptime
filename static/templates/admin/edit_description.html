@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Description - {{ server.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Edit Description for <strong>{{ server.name }}</strong></h2>
+            <a href="{{ url_for('manage_descriptions') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Server Description</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title *</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               value="{{ description.title if description else '' }}" 
+                               placeholder="e.g., SAP Business Suite" required>
+                        <div class="form-text">A brief title that appears in bold</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description *</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="5" required>{{ description.description if description else '' }}</textarea>
+                        <div class="form-text">Main description text. Use \n for line breaks.</div>
+                    </div>
+<!-- werkt nog niet volledig (manueel in de programma code)-->
+                    <div class="mb-3">
+                        <label for="contact_info" class="form-label">Contact Information</label>
+                        <textarea class="form-control" id="contact_info" name="contact_info" 
+                                  rows="3">{{ description.contact_info if description else '' }}</textarea>
+                        <div class="form-text">Optional contact details (team, phone, email)</div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="is_active" 
+                               name="is_active" {% if not description or description.is_active %}checked{% endif %}>
+                        <label class="form-check-label" for="is_active">Active (show on status page)</label>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('manage_descriptions') }}" class="btn btn-secondary me-md-2">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Description
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-4 p-3 bg-light rounded">
+            <h5>Preview</h5>
+            <div class="border rounded p-3 bg-white">
+                {% if description and description.is_active %}
+                    <p><strong>{{ description.title }}</strong></p>
+                    <p>{{ description.description.replace('\n', '<br>')|safe }}</p>
+                    {% if description.contact_info %}
+                        <p class="mb-0">{{ description.contact_info.replace('\n', '<br>')|safe }}</p>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted mb-0">No active description. This will show the default text on the status page.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
