@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Maintenance for {{ server.name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/maintance.css')}}">
+
+</head>
+<body>
+    <div class="form-container">
+        <h1>Schedule Maintenance for {{ server.name }}</h1>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="error-messages">
+                    <ul style="margin: 0; padding: 0; list-style: none;">
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endwith %}
+        <form method="post">
+            <label for="start_time">Start Time</label>
+            <input type="datetime-local" id="start_time" name="start_time" required>
+            <label for="end_time">End Time</label>
+            <input type="datetime-local" id="end_time" name="end_time" required>
+            <label for="description">Description</label>
+            <textarea id="description" name="description" placeholder="Enter maintenance description..."></textarea>
+            <input type="submit" value="Schedule Maintenance">
+        </form>
+        <div class="back-link">
+            <a href="{{ url_for('admin') }}">Back to Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>
