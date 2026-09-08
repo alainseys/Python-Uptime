@@ -1,0 +1,47 @@
+{
+  "name": "ansible-dev-container-podman",
+  "build": {
+    "context": "..",
+    "dockerfile": "Dockerfile"
+  },
+  "containerUser": "root",
+  "runArgs": [
+    "--cap-add=CAP_MKNOD",
+    "--cap-add=NET_ADMIN",
+    "--cap-add=SYS_ADMIN",
+    "--cap-add=SYS_RESOURCE",
+    "--device", "/dev/fuse",
+    "--security-opt", "seccomp=unconfined",
+    "--security-opt", "label=disable",
+    "--security-opt", "apparmor=unconfined",
+   // "--security-opt", "unmask=/sys/fs/cgroup",
+    "--userns=host",
+    "--hostname=ansible-dev-container",
+    "--add-host=host.docker.internal:host-gateway"
+    // ← no DOCKER_HOST here in runArgs
+  ],
+
+  // THIS IS THE ONLY THING THAT MATTERS
+ // "mounts": [
+ //   "source=/run/user/1000/podman/podman.sock,target=/var/run/docker.sock,type=bind"
+//  ],
+
+  // THIS MUST BE THE UNIX SOCKET — NOT TCP!
+  "remoteEnv": {
+    "DOCKER_HOST": "unix:///var/run/docker.sock"
+  },
+
+  "postCreateCommand": "git config --global --add safe.directory '*' && git config pull.rebase true",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "redhat.ansible",
+        "ms-azuretools.vscode-docker",
+        "oderwat.indent-rainbow",
+        "cweijan.vscode-postgresql-client2"
+        // … your other extensions
+      ]
+    }
+  }
+}
