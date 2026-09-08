@@ -1,0 +1,22 @@
+{% extends "admin.html" %}
+{% block title %}Import Database{% endblock %}
+
+{% block content %}
+<h2>Import Database</h2>
+<form method="post" enctype="multipart/form-data">
+  <p>
+    <input type="file" name="file" accept=".json" required>
+  </p>
+  <p style="color: red; font-weight: bold;">
+    WARNING: This will <strong>delete all current data</strong> and replace it.
+  </p>
+  <p>
+    <label>
+      <input type="checkbox" name="confirm_overwrite" required>
+      I understand — overwrite everything
+    </label>
+  </p>
+  <button type="submit" class="btn btn-danger">Import & Overwrite</button>
+  <a href="{{ url_for('admin') }}" class="btn">Cancel</a>
+</form>
+{% endblock %}
