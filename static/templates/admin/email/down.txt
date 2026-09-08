@@ -1,0 +1,6 @@
+{{ server_name }} is currently DOWN
+
+Status: {{ status }}
+Started: {{ start_time }}
+
+We will notify you when it recovers.
