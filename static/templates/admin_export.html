@@ -1,0 +1,15 @@
+{% extends "admin.html" %}
+{% block title %}Confirm Import{% endblock %}
+
+{% block content %}
+<h2>Confirm Database Import</h2>
+<p>You are about to <strong>replace all data</strong> with:</p>
+<p><strong>{{ filename }}</strong></p>
+<p style="color: red;">This cannot be undone!</p>
+<form method="post" enctype="multipart/form-data">
+  <input type="hidden" name="confirm_overwrite" value="1">
+  <input type="hidden" name="file" value="{{ filename }}">
+  <button type="submit" class="btn btn-danger">Yes, Overwrite Everything</button>
+  <a href="{{ url_for('admin_import') }}" class="btn">Cancel</a>
+</form>
+{% endblock %}
