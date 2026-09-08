@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Subscribers{% endblock %}
+
+{% block content %}
+<h1>Notification Subscribers</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Servers</th>
+            <th>Created</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for sub in subscribers %}
+        <tr>
+            <td>{{ sub.email }}</td>
+            <td>
+                {% if sub.servers %}
+                    {{ sub.servers|map(attribute='name')|join(', ') }}
+                {% else %}
+                    <em>none</em>
+                {% endif %}
+            </td>
+            <td>{{ sub.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        </tr>
+    {% else %}
+        <tr><td colspan="3" style="text-align:center;color:var(--gray-500);"><em>No subscribers yet.</em></td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<p style="margin-top:2rem;text-align:center;">
+    <a href="{{ url_for('admin') }}" class="btn btn-secondary">Back to Admin</a>
+</p>
+{% endblock %}
